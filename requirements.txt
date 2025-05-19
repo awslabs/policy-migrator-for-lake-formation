@@ -31,7 +31,7 @@ pytz==2024.1
 PyYAML==6.0.1
 rich==13.7.1
 s3transfer==0.10.2
-setuptools==72.1.0
+setuptools==78.1.1
 six==1.16.0
 stevedore==5.2.0
 tomlkit==0.13.0
