@@ -25,12 +25,19 @@ class PermissionRecord:
         return self._permission_actions
 
     def __str__(self) -> str:
-        return f'PrincipalArn: "{self._principal_arn}" ResourceArn: "{self._resource_arn}" PermissionActions: [{[action for action in self._permission_actions]}]'
+        return f'PrincipalArn: "{self._principal_arn}" ResourceArn: "{self._resource_arn}" PermissionActions: [{list(self._permission_actions)}]'
+
+    def __eq__(self, other) -> bool:
+        return isinstance(other, PermissionRecord) and \
+            self._principal_arn == other._principal_arn and \
+            self._resource_arn == other._resource_arn and \
+            self._permission_actions == other._permission_actions
+
+    def __hash__(self) -> int:
+        return hash((self._principal_arn, self._resource_arn, frozenset(self._permission_actions)))
 
     def __lt__(self, other) -> bool:
-        if other is None or not isinstance(other, PermissionRecord):
-            return False
-
-        return self.principal_arn() < other.principal_arn() and \
-            self.resource_arn() < other.resource_arn() and \
-            self.permission_actions() < other.permission_actions()
+        if not isinstance(other, PermissionRecord):
+            return NotImplemented
+        return (self._principal_arn, self._resource_arn, sorted(self._permission_actions)) < \
+               (other._principal_arn, other._resource_arn, sorted(other._permission_actions))

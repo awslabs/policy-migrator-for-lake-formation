@@ -37,7 +37,9 @@ class GlueTable(AwsObject):
         return f"arn:aws:glue:{self._region}:{self._catalog}:table/{self._database}/{self._name}"
 
     def __lt__(self, other):
-        return self._region < other._region and self._catalog < other._catalog and self._database < other._database and self._name < other._name
+        if not isinstance(other, GlueTable):
+            return NotImplemented
+        return (self._region, self._catalog, self._database, self._name) < (other._region, other._catalog, other._database, other._name)
 
     def __eq__(self, other):
         return isinstance(other, GlueTable) and self._catalog == other._catalog and self._database == other._database and self._name == other._name

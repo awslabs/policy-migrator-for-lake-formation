@@ -80,8 +80,8 @@ class IamPolicyReader():
         logger.debug("Reading IAM user policies.")
         user_paginator = self._iam_client.get_paginator('list_users')
         for page in user_paginator.paginate():
-            logger.debug(f"Reading for User: {page['Users'][0]['UserName']}")
             for user in page['Users']:
+                logger.debug(f"Reading for User: {user['UserName']}")
                 self._iam_user_arns.append(user['Arn'])
                 self._read_iam_user_policies_for_user(user['UserName'], user['Arn'])
 

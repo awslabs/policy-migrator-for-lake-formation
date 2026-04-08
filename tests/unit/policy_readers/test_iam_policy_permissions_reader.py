@@ -12,6 +12,7 @@ from unittest.mock import Mock
 import logging
 
 class TestIAMPolicyPermissionsReader(unittest.TestCase):
+    """Tests for IAM policy permissions reader."""
 
     CATALOG_ID = PermissionsListTestHelper.test_catalog_id
     GLUE_DATA_CATALOG = PermissionsListTestHelper.create_glue_data_catalog()
@@ -48,7 +49,7 @@ class TestIAMPolicyPermissionsReader(unittest.TestCase):
         self.assertEqual(permissionsList.get_permissions()[0].principal_arn(), "arn:aws:iam::012345678901:role/role1")
         self.assertEqual(permissionsList.get_permissions()[0].resource_arn(), f"arn:aws:glue:us-east-1:{TestIAMPolicyPermissionsReader.CATALOG_ID}:table/test_database/test_table")
 
-    def not_test_glue_multiple_statements_policy(self):
+    def test_glue_multiple_statements_policy(self):
         self._iam_policy_reader.get_all_prinicial_policies.return_value = iter({ "arn:aws:iam::012345678901:role/role1" : [
             {
 	                "Version": "2012-10-17",
@@ -230,7 +231,7 @@ class TestIAMPolicyPermissionsReader(unittest.TestCase):
                         {
                             "Effect": "Allow",
                             "Action": [ "s3:Get*" ],
-                            "Resource": f"arn:aws:s3:::mybucket/test_database2/*"
+                            "Resource": "arn:aws:s3:::mybucket/test_database2/*"
                         }
 	                ]
             }

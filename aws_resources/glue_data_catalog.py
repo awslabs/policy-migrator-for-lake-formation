@@ -13,7 +13,7 @@ class GlueDataCatalog():
     '''
 
     def __init__(self) -> None:
-        self._catalogs : dict [str, GlueCatalog]= {}
+        self._catalogs : dict[str, GlueCatalog] = {}
 
     def add_catalog(self, glue_catalog: GlueCatalog):
         if glue_catalog.get_catalog_id() not in self._catalogs:
@@ -28,7 +28,7 @@ class GlueDataCatalog():
             return None
         return catalog
 
-    def get_catalogs(self) -> dict[GlueCatalog]:
+    def get_catalogs(self) -> dict[str, GlueCatalog]:
         return self._catalogs
 
     def add_database(self, database: GlueDatabase):
@@ -121,8 +121,7 @@ class GlueDataCatalogIterator:
             yield catalog
             for database in catalog.get_databases().values():
                 yield database
-                for table in database.get_tables().values():
-                    yield table
+                yield from database.get_tables().values()
 
 class GlueDataCatalogTablesIterator:
     '''
@@ -141,5 +140,4 @@ class GlueDataCatalogTablesIterator:
     def _generate(self, glueDataCatalog : GlueDataCatalog):
         for catalog in glueDataCatalog.get_catalogs().values():
             for database in catalog.get_databases().values():
-                for table in database.get_tables().values():
-                    yield table
+                yield from database.get_tables().values()

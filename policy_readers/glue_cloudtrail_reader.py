@@ -156,7 +156,8 @@ class GlueEventCloudTrailPolicyReader(PolicyReaderInterface):
         permissions_list = PermissionsList()
 
         for _, row in results_df.iterrows():
-            if (self._has_nulls(row, row['resource_level'], row['user_arn'], ['awsRegion'], row['aws_account_id'], row['eventname'])): continue
+            if self._has_nulls(row, row['resource_level'], row['user_arn'], ['awsRegion'], row['aws_account_id'], row['eventname']):
+                continue
             if row['resource_level'] == 'CATALOG':
                 permissions_list.add_permission(
                     row['user_arn'],
@@ -164,7 +165,7 @@ class GlueEventCloudTrailPolicyReader(PolicyReaderInterface):
                     f"glue:{row['eventname']}"
                 )
             elif row['resource_level'] == 'DATABASE':
-                if (self._has_nulls(row, row['database_name'])):
+                if self._has_nulls(row, row['database_name']):
                     continue
                 # Permission on the database
                 permissions_list.add_permission(
@@ -173,7 +174,7 @@ class GlueEventCloudTrailPolicyReader(PolicyReaderInterface):
                     f"glue:{row['eventname']}"
                 )
             elif row['resource_level'] == 'TABLE':
-                if (self._has_nulls(row, row['database_name'], row['table_name'])):
+                if self._has_nulls(row, row['database_name'], row['table_name']):
                     continue
                 permissions_list.add_permission(
                     row['user_arn'],

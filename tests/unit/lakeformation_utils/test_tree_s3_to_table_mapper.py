@@ -6,9 +6,9 @@ from aws_resources.glue_table import GlueTable
 from tests.unit.helpers.global_test_variables import GlobalTestVariables
 
 import unittest
-import logging
 
 class TestS3ToTableMapper(unittest.TestCase):
+    """Tests for S3 path to Glue table mapping."""
 
     gdcCatalog : GlueDataCatalog = GlueDataCatalog()
     s3ToTableMapper : S3ToTableMapper = None

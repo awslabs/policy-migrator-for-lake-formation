@@ -17,7 +17,4 @@ class S3ActionTranslator:
 
     @staticmethod
     def translate_s3_action_to_lf_permission_type(s3Action: S3Action) -> LakeFormationPermissions:
-        permission = S3ActionTranslator._s3_action_to_lf_permission_type_map.get(s3Action, None)
-        if permission is None:
-            raise ValueError(f"No permission found for {s3Action}")
-        return permission
+        return S3ActionTranslator._s3_action_to_lf_permission_type_map.get(s3Action, None)

@@ -16,10 +16,7 @@ class DataLakeLocationCommitter:
         self._registration_role = registration_role
 
     def register_locations(self):
-        if self._registration_role is None or "/aws-service-role/" in self._registration_role:
-            useServiceLinkedRole = True
-        else:
-            useServiceLinkedRole = False
+        useServiceLinkedRole = self._registration_role is None or "/aws-service-role/" in self._registration_role
 
         for location in self._locations:
             try:

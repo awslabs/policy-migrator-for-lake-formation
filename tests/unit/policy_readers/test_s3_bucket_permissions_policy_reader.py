@@ -11,6 +11,7 @@ import unittest.mock
 from unittest.mock import Mock
 
 class TestS3BucketPermissionsPolicyReader(unittest.TestCase):
+    """Tests for S3 bucket policy reader."""
 
     CATALOG_ID = PermissionsListTestHelper.test_catalog_id
     GLUE_DATA_CATALOG = PermissionsListTestHelper.create_glue_data_catalog()
@@ -41,7 +42,7 @@ class TestS3BucketPermissionsPolicyReader(unittest.TestCase):
                                 "AWS" : [ 
                                 "arn:aws:iam:012345678901::role/role1",
                                 "arn:aws:iam:012345678901::role/role2"
-                                ] 
+                                ]
                             },
                             "Resource": "arn:aws:s3:::mybucket/test_database/*"
                         }

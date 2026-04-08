@@ -43,7 +43,7 @@ class TreeNode:
         return self._parent_node._get_path_value() + "/" + self._path_val
 
     def __str__(self):
-        return f"TreeNode(path_val={self._path_val}, values={[node for node in self._values]})"
+        return f"TreeNode(path_val={self._path_val}, values={list(self._values)})"
 
     def __rshift__(self, other):
         ''' Right shift operator that will traverse its children and return its child. None otherwise. '''

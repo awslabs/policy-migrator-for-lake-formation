@@ -8,6 +8,7 @@ from aws_resources.glue_table import GlueTable
 from tests.unit.helpers.permissions_list_test_helpers import PermissionsListTestHelper
 
 class TestGlueDataCatalog(unittest.TestCase):
+    """Tests for GlueDataCatalog operations."""
 
     def test_create_and_query_data_catalog(self):
         catalog_id = PermissionsListTestHelper.test_catalog_id

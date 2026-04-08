@@ -15,7 +15,7 @@ class S3ToTableMapper:
     def __init__(self, glueDataCatalog : GlueDataCatalog):
         self._s3_tree = S3Tree()
 
-        #Loop through glueDataCatalog and filter by tables. Take the tables location and 
+        #Loop through glueDataCatalog and filter by tables. Take the tables location and
         #put it in our _s3_to_table_map
         for table in glueDataCatalog.get_tables():
             if table.get_location() is not None and table.get_location().startswith("s3://"):

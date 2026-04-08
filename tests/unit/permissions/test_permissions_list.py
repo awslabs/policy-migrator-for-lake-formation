@@ -4,6 +4,7 @@ from permissions.permissions_list import PermissionsList
 from permissions.permission_record import PermissionRecord
 
 class TestPermissionsList(unittest.TestCase):
+    """Tests for PermissionsList operations."""
     def test_permissions_list_adding_permissions(self):
         permissionsList = PermissionsList()
         permissionsList.add_permission("principal1", "resource1", "glue:GetTable")
