@@ -3,6 +3,7 @@ from aws_resources.actions.s3_action import S3Action
 from aws_resources.aws_arn_utils import AwsArnUtils
 from aws_resources.aws_resource import AwsObject
 from aws_resources.glue_data_catalog import GlueDataCatalog
+from aws_resources.glue_catalog import GlueCatalog
 from aws_resources.glue_database import GlueDatabase
 from aws_resources.glue_table import GlueTable
 from aws_resources.readers.iam_policy_reader import IamPolicyReader
@@ -142,7 +143,7 @@ class IamPolicyParser:
                 tables = self._s3_to_table_mapper.get_all_tables_from_s3_arn_prefix(resource[:-1])
                 logger.debug(f"Resource is {resource} : Tables: {[table.get_database() + ":" + table.get_name() + ":" + table.get_location() for table in tables]}")
                 s3_resources.extend([AwsArnUtils.get_s3_arn_from_s3_path(table.get_location()) + "*" for table in tables if table.get_location()])
-        if AwsArnUtils.isGlueArn(resource):
+        elif AwsArnUtils.isGlueArn(resource):
             logger.debug(f"Is Glue Resource: {resource}")
             awsObject : AwsObject = AwsArnUtils.getAwsObjectFromArn(resource)
             if not awsObject:
@@ -162,6 +163,17 @@ class IamPolicyParser:
                 database = awsObject.get_name()
                 databases = self._glue_data_catalog.get_resources_by_wildcard(catalog_id, database)
                 glue_resources.extend([database.get_arn() for database in databases])
+            elif isinstance(awsObject, GlueCatalog):
+                logger.debug(f"Is Glue Catalog: {resource}")
+                catalogs = self._glue_data_catalog.get_resources_by_wildcard(catalog_id)
+                glue_resources.extend([catalog.get_arn() for catalog in catalogs])
+        elif resource == "*":
+            catalogs = self._glue_data_catalog.get_resources_by_wildcard("*")
+            tables = self._glue_data_catalog.get_resources_by_wildcard("*", "*", "*")
+            databases = self._glue_data_catalog.get_resources_by_wildcard("*", "*")
+            glue_resources.extend([catalog.get_arn() for catalog in catalogs])
+            glue_resources.extend([database.get_arn() for database in databases])
+            glue_resources.extend([table.get_arn() for table in tables])
 
     def _filter_actions(self, actions) -> tuple[list[str], list[str]]:
         glue_actions : list[str] = []
@@ -180,10 +192,9 @@ class IamPolicyParser:
         if action == "*":
             glue_actions.extend(GlueAction.get_glue_actions_with_wildcard(action))
             s3_actions.extend(S3Action.get_s3_actions_with_wildcard(action))
-            return
-        if action.startswith("s3:"):
+        elif action.startswith("s3:"):
             s3_actions.extend(S3Action.get_s3_actions_with_wildcard(action[3:]))
-        if action.startswith("glue:"):
+        elif action.startswith("glue:"):
             glue_actions.extend(GlueAction.get_glue_actions_with_wildcard(action[5:]))
 
     def _is_valid_statement(self, statement : dict[str | dict]) -> bool:

@@ -55,7 +55,7 @@ class TestAwsArnUtils(unittest.TestCase):
         self.assertEqual(s3ObjectObj.get_partition(), "aws")
         self.assertEqual(s3ObjectObj.get_key(), "mytable/mypartition/some_object.parq")
 
-    def test_s3_object_arn(self):
+    def test_s3_path_from_arn(self):
         s3path = AwsArnUtils.get_s3_path_from_arn("arn:aws:s3:::mybucket/test_database2/test_table/object2.parq")
         self.assertEqual(s3path, "s3://mybucket/test_database2/test_table/object2.parq")
 

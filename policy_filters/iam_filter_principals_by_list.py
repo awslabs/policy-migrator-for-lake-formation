@@ -3,7 +3,6 @@ from .policy_filter_interface import PolicyFilterInterface
 
 from config.application_configuration import ApplicationConfiguration
 
-import re
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,7 +16,7 @@ class IamFilterPrincipalsByList(PolicyFilterInterface):
         TODO: Not completed.
     '''
 
-    _REQUIRED_CONFIGURATION = { "principals_list", "A list of principals to filter permissions by. "}
+    _REQUIRED_CONFIGURATION = { "principals_list": "A list of principals to filter permissions by." }
     _CONFIGURATION_SECTION = "policy_iam_filter_principals_by_list"
 
     def __init__(self, appConfig : ApplicationConfiguration, conf : dict[str]):

@@ -11,6 +11,7 @@ from policy_filters.policy_filter_interface import PolicyFilterInterface
 from policy_filters.iam_principal_validator import IAMPrincipalValidator
 from policy_filters.glue_data_catalog_filter import FilterNotInGlueCatalog
 from policy_filters.iam_policy_simulator_validator import IAMPolicySimulatorValidator
+from policy_filters.datazone_role_filter import FilterDataZoneRoles
 
 # Post Processing modules
 from post_processing_plugins.post_processing_plugin_interface import PostProcessingPluginInterface
@@ -39,7 +40,7 @@ class MainApplication:
     The main application class.
     '''
     _POLICY_READERS : list[PolicyReaderInterface] = [ GlueEventCloudTrailPolicyReader, S3CloudTrailDataEventsReader, S3BucketPermissionsPolicyReader, IamPolicyPermissionsReader]
-    _POLICY_FILTERS : list[PolicyFilterInterface] = [ IAMPrincipalValidator, FilterNotInGlueCatalog, FilterInvalidActionsToResources, IAMPolicySimulatorValidator ]
+    _POLICY_FILTERS : list[PolicyFilterInterface] = [ IAMPrincipalValidator, FilterNotInGlueCatalog, FilterInvalidActionsToResources, FilterDataZoneRoles, IAMPolicySimulatorValidator ]
     _POST_PROCESSING_PLUGINS : list[PostProcessingPluginInterface] = [ AddDataPermissionsFromGluePermissions ]
 
     def __init__(self, args):
@@ -116,7 +117,7 @@ class MainApplication:
         logger.info("=> Starting to run post processing plugins.")
         imported_permissions : PermissionsList | None = self._import_export.import_post_processed_permissions_input()
         if imported_permissions is not None:
-            return self._import_export.import_post_processed_permissions_input()
+            return imported_permissions
 
         for module in MainApplication._POST_PROCESSING_PLUGINS:
             config_section = ConfigHelper.get_section(self._args, module.get_config_section(), {})

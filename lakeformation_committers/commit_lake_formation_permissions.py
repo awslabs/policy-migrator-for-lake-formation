@@ -23,28 +23,28 @@ class LakeFormationPermissionsCommitter:
         for permission in permissionsList:
             try:
                 logger.debug(f"Committing permission: {permission}")
-                awsObject = AwsArnUtils.getAwsObjectFromArn(permission.get_resource_arn())
+                awsObject = AwsArnUtils.getAwsObjectFromArn(permission.resource_arn())
                 if not awsObject:
                     continue
 
                 if isinstance(awsObject, GlueCatalog):
                     self._lf_client.grant_permissions(
-                            Principal = {  'DataLakePrincipalIdentifier': permission.get_principal_arn() },
+                            Principal = {  'DataLakePrincipalIdentifier': permission.principal_arn() },
                             Resource = { 'Catalog' : {} },
-                            Permissions = permission.get_permissions()
+                            Permissions = list(permission.permission_actions())
                             )
                 elif isinstance(awsObject, GlueDatabase):
                     self._lf_client.grant_permissions(
-                            Principal = {  'DataLakePrincipalIdentifier': permission.get_principal_arn() },
+                            Principal = {  'DataLakePrincipalIdentifier': permission.principal_arn() },
                             Resource = { 'Database': { 'CatalogId': awsObject.get_catalog_id(), 'Name': awsObject.get_name() } },
-                            Permissions = permission.get_permissions()
+                            Permissions = list(permission.permission_actions())
                             )
                 elif isinstance(awsObject, GlueTable):
                     # pylint: disable=no-value-for-parameter
                     self._lf_client.grant_permissions(
-                            Principal = {  'DataLakePrincipalIdentifier': permission.get_principal_arn() },
+                            Principal = {  'DataLakePrincipalIdentifier': permission.principal_arn() },
                             Resource = { 'Table': { 'CatalogId': awsObject.get_catalog_id(), 'DatabaseName': awsObject.get_database(), 'Name': awsObject.get_name() } },
-                            Permissions = permission.get_permissions()
+                            Permissions = list(permission.permission_actions())
                             )
                 else:
                     logger.error(f"Unrecognized AWS Resource Type for Permissions {permission}")

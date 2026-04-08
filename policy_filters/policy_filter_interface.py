@@ -33,7 +33,7 @@ class PolicyFilterInterface:
 
     def _add_filtered_permission_record(self, permission : PermissionRecord):
         if self._filtered_permissions.add_permission_record(permission):
-            logger.debug(f"Filtered permission: Principal:{permission.principal_arn()} Resource:{permission.resource_arn()} Action:{[action for action in permission.permission_actions()]}")
+            logger.debug(f"Filtered permission: Principal:{permission.principal_arn()} Resource:{permission.resource_arn()} Action:{list(permission.permission_actions())}")
             self._count_filtered += 1
 
     @classmethod

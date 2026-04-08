@@ -57,11 +57,11 @@ class GlueAction(StrEnum):
     @staticmethod
     def get_table_level_actions() -> set:
         return {GlueAction.GetTable, GlueAction.UpdateTable, GlueAction.DeleteTable,
-                                 GlueAction.GetTableVersion, GlueAction.GetTableVersions, GlueAction.DeleteTableVersion, GlueAction.BatchDeleteTableVersion, 
-                                 GlueAction.BatchCreatePartition, GlueAction.CreatePartition, GlueAction.GetPartition, GlueAction.GetPartitions, 
-                                 GlueAction.BatchGetPartition, GlueAction.CreatePartition,
-                                 GlueAction.DeletePartition, GlueAction.BatchDeletePartition, GlueAction.UpdatePartition, GlueAction.BatchUpdatePartition, 
-                                 GlueAction.GetPartitionIndexes, GlueAction.CreatePartitionIndex, GlueAction.DeletePartitionIndex}
+                GlueAction.GetTableVersion, GlueAction.GetTableVersions, GlueAction.DeleteTableVersion, GlueAction.BatchDeleteTableVersion,
+                GlueAction.BatchCreatePartition, GlueAction.CreatePartition, GlueAction.GetPartition, GlueAction.GetPartitions,
+                GlueAction.BatchGetPartition, GlueAction.CreatePartition,
+                GlueAction.DeletePartition, GlueAction.BatchDeletePartition, GlueAction.UpdatePartition, GlueAction.BatchUpdatePartition,
+                GlueAction.GetPartitionIndexes, GlueAction.CreatePartitionIndex, GlueAction.DeletePartitionIndex}
 
     @staticmethod
     def get_database_level_actions() -> set:

@@ -3,6 +3,7 @@ import unittest
 from aws_resources.actions.glue_action import GlueAction
 
 class TestGlueAction(unittest.TestCase):
+    """Tests for GlueAction wildcard expansion."""
 
     def test_glue_action(self):
         actions = GlueAction.get_glue_actions_with_wildcard("Get*")

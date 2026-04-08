@@ -7,7 +7,8 @@ from aws_resources.glue_data_catalog import GlueTable
 from lakeformation_utils.data_lake_location_generator import LakeFormationS3DataLakeLocationGenerator
 from tests.unit.helpers.global_test_variables import GlobalTestVariables
 class TestDataLakeLocationGenerator(unittest.TestCase):
-    
+    """Tests for data lake location generation from Glue catalog."""
+
     def test_generate_data_lake_location(self):
         test_catalog = GlobalTestVariables.test_catalog_id
         test_region = GlobalTestVariables.test_region
@@ -15,7 +16,7 @@ class TestDataLakeLocationGenerator(unittest.TestCase):
         gdcCatalog = GlueDataCatalog()
 
         gdcCatalog.add_catalog(GlueCatalog(test_region, test_catalog))
-        
+
         # The following should add s3://mybucket/ as the root location for these locations
         gdcCatalog.add_database(GlueDatabase(test_region, test_catalog, "test_database", "s3://mybucket/mydatabases/"))
         gdcCatalog.add_table(GlueTable(test_region, test_catalog, "test_database", "test_table", "s3://mybucket/mydatabases/test_table/"))

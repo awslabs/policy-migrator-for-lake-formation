@@ -149,5 +149,5 @@ class S3CloudTrailDataEventsReader(PolicyReaderInterface):
         """Parses the events from a CloudTrail row. """
         events = events[1:-1]
         events = events.split(',')
-        events = [f"s3:{event.strip()}" for event in events]
+        events = {f"s3:{event.strip()}" for event in events}
         return events

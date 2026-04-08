@@ -466,3 +466,4 @@ We will be adding additional validators/filters:
 4. Use a clustering algorithm to suggest project names within Data Zone and setup these projects.
 5. Support AWS Identity Centers TIP functionality to grant to users when iam:SourceIdentity is enabled.
 6. Generalize Committers such that there could be additional places to commit policies to, such as DataZone.
+7. Full catalog-level permission support. The IAM policy parser now resolves catalog ARNs and Resource: "*" includes catalogs, but the downstream pipeline (permission translators, filters, and the Lake Formation committer) needs to be updated to fully handle catalog-level permissions like CREATE_DATABASE and LIST_DBS end-to-end.

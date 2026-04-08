@@ -79,7 +79,7 @@ class PermissionsImportExport:
             for permission in permissionsList:
                 csvWriter.writerow( {  PermissionsImportExport._PERMISSIONS_FIELD_NAMES[0] : permission.principal_arn(),
                                        PermissionsImportExport._PERMISSIONS_FIELD_NAMES[1] : permission.resource_arn(),
-                                       PermissionsImportExport._PERMISSIONS_FIELD_NAMES[2] : "[" + ",".join([action for action in permission.permission_actions()]) + "]"
+                                       PermissionsImportExport._PERMISSIONS_FIELD_NAMES[2] : "[" + ",".join(list(permission.permission_actions())) + "]"
                                     }
                                   )
 

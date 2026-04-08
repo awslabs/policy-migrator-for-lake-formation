@@ -19,7 +19,7 @@ class PermissionsList:
         assert isinstance(resource_arn, str)
         assert isinstance(principal_arn, str)
 
-        actions = self._permissions.setdefault(principal_arn, dict()).setdefault(resource_arn, set())
+        actions = self._permissions.setdefault(principal_arn, {}).setdefault(resource_arn, set())
         if not actions:
             self._permissions_count += 1
         if iam_action not in actions:
@@ -34,12 +34,12 @@ class PermissionsList:
         already exists, it will ignore it. 
         Returns: True if a permission was added, False if a permission already existed
         """
-        actions = self._permissions.setdefault(permissionRecord.principal_arn(), dict()).setdefault(permissionRecord.resource_arn(), set())
+        actions = self._permissions.setdefault(permissionRecord.principal_arn(), {}).setdefault(permissionRecord.resource_arn(), set())
         if not actions:
             self._permissions_count += 1
-        for action in permissionRecord.permission_actions():
-            if action not in actions:
-                actions.update(permissionRecord.permission_actions())
+        new_actions = permissionRecord.permission_actions() - actions
+        if new_actions:
+            actions.update(new_actions)
             logger.debug(f"Added Permission: {permissionRecord.principal_arn()}, Resource: {permissionRecord.resource_arn()}, Actions: {actions}")
             return True
         return False
