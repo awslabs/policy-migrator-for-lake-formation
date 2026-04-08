@@ -21,14 +21,22 @@ class FilterDataZoneRoles(PolicyFilterInterface):
 
     def __init__(self, appConfig : ApplicationConfiguration, conf : dict[str]):
         super().__init__(appConfig, conf)
+        logger.info(f"Filter {self.get_name()} initialized.")
 
     def filter_policies(self, permissionsList : PermissionsList) -> PermissionsList:
+        total_permissions = permissionsList.get_permissions_count()
+        logger.info(f"{self.get_name()}: Starting to filter DataZone roles. Input permissions count: {total_permissions}")
+
         for permission in permissionsList.get_permissions():
             principal_arn = permission.principal_arn()
             role_name = self._extract_role_name(principal_arn)
             if role_name and role_name.startswith(self._DATAZONE_ROLE_PREFIX):
-                logger.debug(f"Filtering DataZone role: {principal_arn}")
+                logger.debug(f"Filtering DataZone role: {principal_arn} (role_name={role_name}), resource: {permission.resource_arn()}")
                 self._add_filtered_permission_record(permission)
+            else:
+                logger.debug(f"Keeping principal: {principal_arn} (role_name={role_name})")
+
+        logger.info(f"{self.get_name()}: Completed. Filtered {self.get_number_filtered()} permissions out of {total_permissions}.")
         return self.get_filtered_permissions()
 
     @staticmethod
