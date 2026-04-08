@@ -42,7 +42,7 @@ This part of the process will push the policies that were generated to commit th
 
 ## Usage
 
-This utility is python based. You must have a minimum version of Python 3.10 to use. This tool can be used through the command line, or can be incorporated into other tools as a library. The utility will use the default credential provider for all AWS access. The minimum policy required to run this tool is below. 
+This utility is python based. You must have a minimum version of Python 3.12 to use. This tool can be used through the command line, or can be incorporated into other tools as a library. The utility will use the default credential provider for all AWS access. The minimum policy required to run this tool is below. 
 
 ## Configurations
 
@@ -305,20 +305,6 @@ This filter removes any permissions that are not within the Glue Data Catalog as
 | enabled | Determines whether this plugin is enabled or not | true/false | false |
 
 
-### IAM Principal Validator
-This filters permissions by validating that the IAM principal exists within IAM for the local AWS account. 
-
-***Limitations***
-
-- Cross account access is not validated. 
-
-***Configurations***
-
-| Config | Description | Values | Default value |
-| ---- | ---- | ---- | ---- |
-| enabled | Determines whether this plugin is enabled or not | true/false | false |
-
-
 ### IAM Policy Validator using IAM Policy Simulator
 
 This module will validate the permissions generated in the first phase and filter out that may no longer be active, or available. For example, if a Glue Table no longer exists, the tool will filter out permissions on that table. This plugin uses [AWS IAM Policy Simulator](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_testing-policies.html). 
@@ -332,6 +318,65 @@ This module will validate the permissions generated in the first phase and filte
 | Config | Description | Values | Default value |
 | ---- | ---- | ---- | ---- |
 | enabled | Determines whether this plugin is enabled or not | true/false | false |
+
+### DataZone Role Filter
+
+This filter removes permissions for IAM roles whose name starts with `datazone-`. These roles are created and managed by Amazon DataZone and Lake Formation already handles their permissions, so there is no need to migrate them.
+
+***Limitations***
+- Only matches roles where the role name (after the last `/` in the ARN) starts with `datazone-`. The match is case-sensitive.
+- IAM users are not affected by this filter.
+
+***Configurations***
+
+```ini
+[policy_filter_datazone_roles]
+enabled = true
+```
+
+| Config | Description | Values | Default value |
+| ---- | ---- | ---- | ---- |
+| enabled | Determines whether this plugin is enabled or not | true/false | false |
+
+### Principal Include/Exclude Filter
+
+This filter allows you to control which IAM principals are included or excluded from the migration. It supports two mutually exclusive modes:
+- **include_list**: Only keep permissions for principals in this list. All others are filtered out.
+- **exclude_list**: Filter out permissions for principals in this list. All others are kept.
+
+If both are specified, the tool will raise an error. If neither is specified, no filtering is performed.
+
+Principal lists support both comma-separated and newline-separated formats.
+
+***Limitations***
+- Principal ARNs must be exact matches (no wildcards or patterns).
+- Only one of `include_list` or `exclude_list` can be specified at a time.
+
+***Configurations***
+
+```ini
+[policy_filter_principals_by_list]
+enabled = true
+# Use ONE of the following (not both):
+
+# Comma-separated format:
+include_list = arn:aws:iam::123456789012:role/RoleA, arn:aws:iam::123456789012:role/RoleB
+
+# Or newline-separated format (indented continuation lines):
+# include_list =
+#     arn:aws:iam::123456789012:role/RoleA
+#     arn:aws:iam::123456789012:role/RoleB
+#     arn:aws:iam::123456789012:user/UserC
+
+# Or to exclude specific principals:
+# exclude_list = arn:aws:iam::123456789012:role/ServiceRole, arn:aws:iam::123456789012:user/OldUser
+```
+
+| Config | Description | Values | Default value |
+| ---- | ---- | ---- | ---- |
+| enabled | Determines whether this plugin is enabled or not | true/false | false |
+| include_list | Comma or newline separated list of principal ARNs to include. All others are filtered out. | Principal ARNs | None |
+| exclude_list | Comma or newline separated list of principal ARNs to exclude. All others are kept. | Principal ARNs | None |
 
 ## Post Processor components
 
@@ -377,6 +422,12 @@ poetry run coverage run -m pytest -v
 poetry run coverage report -m
 ```
 
+You can also run the full quality suite (tests, coverage, pylint, bandit) with:
+
+```bash
+bash quality.sh
+```
+
 Tip: to show the output of the function, add the `-s` option to the `pytest` command.
 
 Result (may change during development):
@@ -388,60 +439,61 @@ aws_resources/__init__.py                                                       
 aws_resources/actions/__init__.py                                                0      0   100%
 aws_resources/actions/glue_action.py                                            63      1    98%   40
 aws_resources/actions/s3_action.py                                              31      1    97%   19
-aws_resources/aws_arn_utils.py                                                 139     30    78%   31-32, 51-52, 60, 63, 66, 76, 79, 94, 98-100, 108, 112-114, 123, 133, 143, 153, 163, 176, 190-193, 196-197, 214
+aws_resources/aws_arn_utils.py                                                 139     10    93%   98-100, 112-114, 191-192, 196-197
 aws_resources/aws_resource.py                                                    5      2    60%   9, 12
-aws_resources/aws_resource_exceptions.py                                        12      3    75%   15, 22, 29
-aws_resources/glue_catalog.py                                                   34      8    76%   16, 29, 37, 40, 43, 46-48
-aws_resources/glue_data_catalog.py                                             103      8    92%   22, 27-28, 36, 42, 51, 74, 114
-aws_resources/glue_database.py                                                  38      6    84%   18, 36, 40, 43, 51, 54
-aws_resources/glue_table.py                                                     32      2    94%   34, 43
+aws_resources/aws_resource_exceptions.py                                        12      1    92%   15
+aws_resources/glue_catalog.py                                                   36      7    81%   16, 37, 43, 46, 49-51
+aws_resources/glue_data_catalog.py                                             101      5    95%   22, 36, 42, 51, 114
+aws_resources/glue_database.py                                                  42      6    86%   18, 51, 54, 57-59
+aws_resources/glue_table.py                                                     34      2    94%   34, 41
 aws_resources/readers/__init__.py                                                0      0   100%
-aws_resources/readers/glue_data_catalog_reader.py                               39     29    26%   21-23, 30-69
-aws_resources/readers/glue_resource_policy_reader.py                            16     16     0%   2-28
-aws_resources/readers/iam_policy_reader.py                                      92     77    16%   14-21, 24-25, 28-29, 32-33, 36-40, 43-52, 55-72, 75-77, 80-86, 90-112, 115-122
-aws_resources/readers/s3_bucket_policy_reader.py                                39     28    28%   17-19, 22-25, 32-40, 43-57
+aws_resources/readers/glue_data_catalog_reader.py                               39      0   100%
+aws_resources/readers/glue_resource_policy_reader.py                            16      0   100%
+aws_resources/readers/iam_policy_reader.py                                      92      0   100%
+aws_resources/readers/s3_bucket_policy_reader.py                                39      3    92%   55-57
 aws_resources/s3_bucket.py                                                      23      4    83%   23, 26, 32, 35
-aws_resources/s3_object.py                                                      27      6    78%   22, 25, 28, 31, 34, 40
+aws_resources/s3_object.py                                                      27      3    89%   25, 28, 40
 config/__init__.py                                                               0      0   100%
 config/application_configuration.py                                             50     21    58%   36, 39-42, 45-49, 53-56, 60-63, 66-68, 72
-config/argument_parser.py                                                       16     16     0%   1-27
+config/argument_parser.py                                                       16      0   100%
 config/boto3_factory.py                                                          9      4    56%   13-17
-config/config_helper.py                                                         52     36    31%   9, 26-28, 33-37, 41-46, 54-80
-config/config_reader.py                                                         18     18     0%   1-27
-config/configuration_exceptions.py                                               3      3     0%   3-8
+config/config_helper.py                                                         52      1    98%   65
+config/config_reader.py                                                         18      0   100%
+config/configuration_exceptions.py                                               3      0   100%
 lakeformation_committers/__init__.py                                             0      0   100%
-lakeformation_committers/commit_lake_formation_permissions.py                   27     27     0%   2-52
-lakeformation_committers/data_lake_location_committer.py                        25     25     0%   2-46
+lakeformation_committers/commit_lake_formation_permissions.py                   27      3    89%   50-52
+lakeformation_committers/data_lake_location_committer.py                        23     23     0%   2-43
 lakeformation_utils/__init__.py                                                  0      0   100%
 lakeformation_utils/data_lake_location_generator.py                             48      3    94%   14, 63, 67
 lakeformation_utils/s3_to_table_mapper.py                                       35      5    86%   32, 44, 55, 68, 73
-lakeformation_utils/s3_tree.py                                                  76      6    92%   46, 65, 83-85, 96
-lakeformation_utils/tree_node.py                                                34      8    76%   19-20, 26, 29, 38, 41-43
-permissions/__init__.py                                                          2      0   100%
+lakeformation_utils/s3_tree.py                                                  76      5    93%   46, 83-85, 96
+lakeformation_utils/tree_node.py                                                34      0   100%
+permissions/__init__.py                                                          0      0   100%
 permissions/lakeformation_permissions/lakeformation_permissions.py              18      0   100%
-permissions/permission_record.py                                                20      1    95%   32
-permissions/permissions_exporter.py                                             73     34    53%   23-31, 35-37, 40-41, 44-46, 49-50, 53-55, 58-59, 62-64, 67-68, 71-73, 89-90
-permissions/permissions_list.py                                                113      7    94%   45, 53, 113, 117-121
+permissions/permission_record.py                                                24      2    92%   31, 41
+permissions/permissions_exporter.py                                             73      3    96%   54, 63, 72
+permissions/permissions_list.py                                                113      5    96%   53, 117-121
 permissions/translators/__init__.py                                              2      0   100%
 permissions/translators/actions_to_lakeformation_permissions_translator.py      43      1    98%   62
 permissions/translators/glue_data_catalog_action_translator.py                   7      0   100%
-permissions/translators/s3_action_translator.py                                 10      1    90%   22
+permissions/translators/s3_action_translator.py                                  7      0   100%
 policy_filters/__init__.py                                                       0      0   100%
+policy_filters/datazone_role_filter.py                                          33      0   100%
 policy_filters/filter_invalid_actions_to_resources.py                           49      4    92%   39-40, 67, 71
 policy_filters/glue_data_catalog_filter.py                                      64      9    86%   39-40, 45, 58, 63-64, 78, 82, 86
-policy_filters/iam_filter_principals_by_list.py                                 23     23     0%   1-40
-policy_filters/iam_policy_simulator_validator.py                               108    108     0%   1-161
+policy_filters/iam_filter_principals_by_list.py                                 53      0   100%
+policy_filters/iam_policy_simulator_validator.py                               106    106     0%   1-165
 policy_filters/iam_principal_validator.py                                       29     29     0%   1-43
 policy_readers/__init__.py                                                       0      0   100%
-policy_readers/glue_cloudtrail_reader.py                                        61     61     0%   1-214
-policy_readers/iam_policy_parser.py                                            155     18    88%   67-68, 87, 97-100, 149, 160-164, 181-183, 191-192
+policy_readers/glue_cloudtrail_reader.py                                        62     62     0%   1-215
+policy_readers/iam_policy_parser.py                                            166      8    95%   68-69, 88, 98-101, 150
 policy_readers/iam_policy_permissions_reader.py                                 34      3    91%   52, 56, 60
 policy_readers/s3_bucket_permissions_policy_reader.py                           31      3    90%   43, 48, 52
 policy_readers/s3_cloudtrail_reader.py                                          65     65     0%   3-153
 post_processing_plugins/__init__.py                                              0      0   100%
 post_processing_plugins/add_s3_permissions_from_glue_permissions.py             34     34     0%   2-52
 ----------------------------------------------------------------------------------------------------------
-TOTAL                                                                         2027    794    61%
+TOTAL                                                                         2103    444    79%
 ``` 
 
 ### Roadmap
@@ -453,7 +505,7 @@ We will be adding additional Policy Sources:
 
 #### Future Validators/Filters
 We will be adding additional validators/filters:
-1. Principal ignore list to filter service roles that do not require Lake Formation permissions. These roles are generally created by non-analytics services, such as DynamoDB, Lambda, etc.
+1. ~~Principal ignore list to filter service roles that do not require Lake Formation permissions. These roles are generally created by non-analytics services, such as DynamoDB, Lambda, etc.~~ (Implemented: see [DataZone Role Filter](#datazone-role-filter) and [Principal Include/Exclude Filter](#principal-includeexclude-filter))
 
 #### Future Post Processing steps
 1. A step that will determine if a user has access to all tables within a database. If so, it will consolidate table level permissions to ALL_TABLES permissions.
