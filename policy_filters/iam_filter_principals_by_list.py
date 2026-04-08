@@ -36,6 +36,7 @@ class IamFilterPrincipalsByList(PolicyFilterInterface):
 
     def __init__(self, appConfig: ApplicationConfiguration, conf: dict[str]):
         super().__init__(appConfig, conf)
+        logger.info(f"Filter {self.get_name()} initialized.")
 
         include_raw = ConfigHelper.get_config_string(conf, "include_list")
         exclude_raw = ConfigHelper.get_config_string(conf, "exclude_list")
@@ -50,26 +51,36 @@ class IamFilterPrincipalsByList(PolicyFilterInterface):
 
         if self._include_set is not None:
             logger.info(f"{self.get_name()}: Using include_list with {len(self._include_set)} principals.")
+            logger.debug(f"{self.get_name()}: include_list principals: {self._include_set}")
         if self._exclude_set is not None:
             logger.info(f"{self.get_name()}: Using exclude_list with {len(self._exclude_set)} principals.")
+            logger.debug(f"{self.get_name()}: exclude_list principals: {self._exclude_set}")
 
         if self._include_set is None and self._exclude_set is None:
             logger.info(f"{self.get_name()}: No include_list or exclude_list configured. No filtering will be performed.")
 
     def filter_policies(self, permissionsList: PermissionsList) -> PermissionsList:
+        total_permissions = permissionsList.get_permissions_count()
+        mode = "include_list" if self._include_set is not None else "exclude_list" if self._exclude_set is not None else "none"
+        logger.info(f"{self.get_name()}: Starting to filter principals. Mode: {mode}. Input permissions count: {total_permissions}")
+
         if self._include_set is None and self._exclude_set is None:
+            logger.info(f"{self.get_name()}: No filtering configured. Skipping.")
             return self.get_filtered_permissions()
 
         for permission in permissionsList.get_permissions():
             principal = permission.principal_arn()
 
             if self._include_set is not None and principal not in self._include_set:
-                logger.debug(f"Filtering principal not in include_list: {principal}")
+                logger.debug(f"Filtering principal not in include_list: {principal}, resource: {permission.resource_arn()}")
                 self._add_filtered_permission_record(permission)
             elif self._exclude_set is not None and principal in self._exclude_set:
-                logger.debug(f"Filtering principal in exclude_list: {principal}")
+                logger.debug(f"Filtering principal in exclude_list: {principal}, resource: {permission.resource_arn()}")
                 self._add_filtered_permission_record(permission)
+            else:
+                logger.debug(f"Keeping principal: {principal}, resource: {permission.resource_arn()}")
 
+        logger.info(f"{self.get_name()}: Completed. Filtered {self.get_number_filtered()} permissions out of {total_permissions}.")
         return self.get_filtered_permissions()
 
     @staticmethod
