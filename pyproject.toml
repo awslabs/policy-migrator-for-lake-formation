@@ -8,7 +8,6 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pytest = ">=8.3.2,<10.0.0"
 awswrangler = "^3.9.0"
 boto3 = "^1.35.5"
 
@@ -19,6 +18,7 @@ black = "^26.3.1"
 coverage = "^7.5.1"
 bandit = {extras = ["toml"], version = "^1.7.8"}
 ipykernel = "^6.29.5"
+pytest = ">=8.3.2,<10.0.0"
 
 [tool.bandit]
 exclude_dirs = [".venv"]
